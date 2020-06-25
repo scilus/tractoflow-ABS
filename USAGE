@@ -1,0 +1,155 @@
+TractoFlow-Aging pipeline
+=========================
+
+Theaud, G., Houde, J.-C., Boré, A., Rheault, F., Morency, F., Descoteaux, M.,
+TractoFlow: A robust, efficient and reproducible diffusion MRI pipeline
+leveraging Nextflow & Singularity, NeuroImage,
+https://doi.org/10.1016/j.neuroimage.2020.116889.
+
+Run TractoFlow-Aging pipeline
+
+USAGE
+
+nextflow run main.nf [OPTIONAL_ARGUMENTS] (--root)
+
+DESCRIPTION
+
+    --root=/path/to/[root]              Root folder containing multiple subjects
+                                        wmparc and aparc+aseg must be in the same space
+                                        than the t1.
+
+                                        [root]
+                                        ├── S1
+                                        │   ├── dwi.nii.gz
+                                        │   ├── bval
+                                        │   ├── bvec
+                                        │   ├── wmparc.nii.gz
+                                        │   ├── aparc+aseg.nii.gz
+                                        │   └── t1.nii.gz
+                                        └── S2
+                                            ├── dwi.nii.gz
+                                            ├── bval
+                                            ├── bvec
+                                            ├── wmparc.nii.gz
+                                            ├── aparc+aseg.nii.gz
+                                            └── t1.nii.gz
+
+    --dti_shells                                Shells selected to compute the dti metrics (generally b < 1200).
+                                                Please write them between quotes e.g. (--dti_shells "0 300").
+
+    --fodf_shells                               Shells selected to compute the fodf metrics (generally b > 700).
+                                                Please write them between quotes e.g. (--fodf_shells "0 1000").
+
+Files should be compressed Nifti files (.nii.gz)
+
+OPTIONAL ARGUMENTS (current value)
+
+--b0_thr_extract_b0                         All b-values below b0_thr_extract_b0 are considered b=0 images ($b0_thr_extract_b0).
+--dwi_shell_tolerance                       All b-values to +-dwi_shell_tolerance are considered as the same b-value ($dwi_shell_tolerance).
+
+--bet_prelim_f                              Fractional Intensity threshold for preliminary BET ($bet_prelim_f).
+--dilate_b0_mask_prelim_brain_extraction    Dilation factor to keep the whole brain.
+                                            Not the final extraction ($dilate_b0_mask_prelim_brain_extraction).
+
+--run_dwi_denoising                         Run dwi denoising ($run_dwi_denoising).
+--extent                                    Denoising block size ($extent).
+                                            Rule: extent^3 >= number of directions.
+
+--run_topup                                 Run Topup ($run_topup).
+--encoding_direction                        Encoding direction of the DWI [x, y, z] ($encoding_direction).
+--readout                                   Readout time ($readout).
+
+--run_eddy                                  Run Eddy ($run_eddy).
+--eddy_cmd                                  Eddy command to use [eddy_openmp, eddy_cuda] ($eddy_cmd).
+--bet_topup_before_eddy_f                   Fractional Intensity threshold for intermediate BET operation
+                                            on topup corrected images ($bet_topup_before_eddy_f).
+--use_slice_drop_correction                 If set, will use the slice drop correction option from Eddy ($use_slice_drop_correction).
+
+--bet_dwi_final_f                           Fractional Intensity threshold for the final DWI BET ($bet_dwi_final_f).
+
+--fa_mask_threshold                         FA threshold to compute WM mask for normalization ($fa_mask_threshold).
+
+--run_resample_dwi                          Run resample DWI ($run_resample_dwi).
+--dwi_resolution                            DWI resolution ($dwi_resolution).
+--dwi_interpolation                         DWI interpolation method [nn, lin, quad, cubic] ($dwi_interpolation).
+
+--run_t1_denoising                          Run T1 denoising ($run_t1_denoising).
+
+--run_resample_t1                           Run resample T1 ($run_resample_t1).
+--t1_resolution                             T1 resolution ($t1_resolution).
+--t1_interpolation                          T1 interpolation method [nn, lin, quad, cubic] ($t1_interpolation).
+
+--number_of_tissues                         Number of tissue classes ($number_of_tissues).
+
+--fa                                        Initial FA threshold to compute the frf ($fa).
+--min_fa                                    Minimum FA threshold to compute the frf ($min_fa).
+--roi_radius                                Region of interest radius to compute the frf ($roi_radius).
+--set_frf                                   Set manually the frf ($set_frf).
+--manual_frf                                FRF set manually ($manual_frf).
+
+--mean_frf                                  Mean the frf of all subjects ($mean_frf).
+                                            USE ONLY IF ALL OF SUBJECTS COME FROM THE SAME SCANNER
+                                            AND HAVE THE SAME ACQUISITION.
+
+--sh_order                                  Spherical harmonics order ($sh_order).
+                                            Rules :-sh_order=8 for 45 directions
+                                                   -sh_order=6 for 28 directions
+--basis                                     fODF basis [descoteaux07, tournier07] ($basis)
+--fodf_metrics_a_factor                     Multiplicative factor for AFD max in ventricles ($fodf_metrics_a_factor).
+--relative_threshold                        Relative threshold on fODF amplitude in ]0,1] ($relative_threshold)
+--max_fa_in_ventricle                       Maximal threshold of FA to be considered as ventricule voxel ($max_fa_in_ventricle)
+--min_md_in_ventricle                       Minimal threshold of MD in mm2/s to be considered as ventricule voxel ($min_md_in_ventricle)
+
+--wm_seeding                                If 'wm_seeding=true', use the WM-GM interface and the WM mask as seeding mask,
+                                            else use the WM-GM interface as seeding mask ($wm_seeding).
+
+--algo                                      Tracking algorithm [prob, det] ($algo).
+--seeding                                   Seeding type [npv, nt] ($seeding).
+--nbr_seeds                                 Number of seeds related to the seeding type param ($nbr_seeds).
+--random                                    Random seed ($random).
+--step                                      Step size ($step).
+--theta                                     Maximum angle between 2 steps ($theta).
+--min_len                                   Minimum length ($min_len).
+--max_len                                   Maximum length ($max_len).
+--compress_streamlines                      Compress streamlines ($compress_streamlines).
+--compress_value                            Compression error threshold ($compress_value).
+
+--template_t1                               Path to the template T1 directory for antsBrainExtraction.
+                                            The folder must contain t1_template.nii.gz and t1_brain_probability_map.nii.gz.
+                                            The default path is the human_data folder in the singularity container ($template_t1).
+
+--processes_brain_extraction_t1             Number of processes for T1 brain extraction task ($processes_brain_extraction_t1).
+--processes_denoise_dwi                     Number of processes for DWI denoising task ($processes_denoise_dwi).
+--processes_denoise_t1                      Number of processes for T1 denoising task ($processes_denoise_t1).
+--processes_eddy                            Number of processes for eddy task ($processes_eddy).
+--processes_fodf                            Number of processes for fODF task ($processes_fodf).
+--processes_registration                    Number of processes for registration task ($processes_registration).
+
+--output_dir                                Directory where to write the final results.
+                                            By default, will be in "./results"
+
+--processes                                 The number of parallel processes to launch ($cpu_count).
+                                            Only affects the local scheduler.
+
+AVAILABLE PROFILES (using -profile option (e.g. -profile use_cuda,fully_reproducible))
+
+macos                                       When this profile is used, TractoFlow will modify a parameter (scratch) for MacOS users.
+
+use_cuda                                    When this profile is used, TractoFlow will use eddy_cuda for Eddy process.
+                                            This feature is available with NVidia GPUs only. Without this profile, TractoFlow will run eddy_openmp.
+
+fully_reproducible                          When this profile is used, all the parameters will be set to have 100% reproducible results.
+                                            This profile consist to set multi-thread parameters to be fully reproducible [Theaud20].
+
+NOTES
+
+The 'scilpy/scripts' folder should be in your PATH environment variable. Not necessary if the
+Singularity container is used.
+
+The intermediate working directory is, by default, set to './work'.
+To change it, use the '-w WORK_DIR' argument.
+
+The default config file is tractoflow/nextflow.config.
+Use '-C config_file.config' to specify a non-default configuration file.
+The '-C config_file.config' must be inserted after the nextflow call
+like 'nextflow -C config_file.config run ...'.

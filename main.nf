@@ -44,6 +44,7 @@ if(params.help) {
                 "relative_threshold":"$params.relative_threshold",
                 "max_fa_in_ventricle":"$params.max_fa_in_ventricle",
                 "min_md_in_ventricle":"$params.min_md_in_ventricle",
+                "wm_seeding":"$params.wm_seeding",
                 "algo":"$params.algo",
                 "seeding":"$params.seeding",
                 "nbr_seeds":"$params.nbr_seeds",
